@@ -1,0 +1,14 @@
+{
+  "teacher_agent": {
+    "prompt_path": "prompts/prompt_tutor_finnish.txt",
+    "model_type": "gemini",
+    "model_id": "gemini-2.5-flash",
+    "agent_type": "text"
+  },
+  "extractor_agent": {
+    "prompt_path": "prompts/prompt_agent_extractor.txt",
+    "model_type": "openai",
+    "model_id": "gpt-4o",
+    "agent_type": "content"
+  }
+}
