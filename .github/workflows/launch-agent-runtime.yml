@@ -1,7 +1,12 @@
-name: Configure Agent Runtime
+name: Launch Agent Runtime
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'agents/**'
 
 jobs:
   configure-runtime:
@@ -25,14 +30,14 @@ jobs:
 
       - name: Install agentcore CLI
         run: |
-          pip install git+https://github.com/Savidude/bedrock-agentcore-starter-toolkit.git@0.1.32.1
+          pip install "bedrock-agentcore-starter-toolkit==0.1.32"
 
       - name: Make script executable
-        run: chmod +x .github/scripts/configure_agent_runtime.sh
+        run: chmod +x .github/scripts/launch_agent_runtime.sh
 
       - name: Run configure agent runtime script
         env:
           AWS_REGION: ${{ vars.AWS_REGION }}
           AGENT_NAME: ${{ vars.AGENT_NAME }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
-        run: ./.github/scripts/configure_agent_runtime.sh
+        run: ./.github/scripts/launch_agent_runtime.sh
