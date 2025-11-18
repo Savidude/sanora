@@ -6,14 +6,14 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import ValidationError
 
-from ..models.agent_comms import PromptRequest, AgentResponse, TutorResponseData
+from v1.models.agent_comms import PromptRequest, AgentResponse, TutorResponseData
 
-from ..service.agent_runtimes import AgentType, Runtime
-from ..service.agent_communication import (
+from v1.service.agent_runtimes import AgentType, Runtime
+from v1.service.agent_communication import (
     AgentCommunicationService,
     agent_communication_service,
 )
-from ...exceptions import (
+from exceptions import (
     UnexpectedAgentResponseError,
     InvalidRuntimeError,
     AgentInvocationError,
