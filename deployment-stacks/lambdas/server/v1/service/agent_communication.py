@@ -6,10 +6,10 @@ import json
 
 import boto3
 
-from ...exceptions import AgentInvocationError
+from exceptions import AgentInvocationError
 
-from ..models.agent_comms import PromptRequest
-from .agent_runtimes import Runtime
+from v1.models.agent_comms import PromptRequest
+from v1.service.agent_runtimes import Runtime
 
 logger = logging.getLogger(__name__)
 
