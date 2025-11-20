@@ -1,5 +1,6 @@
 """API resources for agent chat functionality."""
 
+import os
 import json
 from datetime import datetime
 
@@ -39,7 +40,7 @@ async def create_chat(
     Raises:
         HTTPException: If there is an error invoking the agent or processing the response
     """
-    tutor_agent_runtime = Runtime(AgentType.TUTOR, "path/to/tutor/agent/runtime/arn")
+    tutor_agent_runtime = Runtime(AgentType.TUTOR, os.getenv("TUTOR_AGENT_RUNTIME_ARN"))
 
     try:
         response = service.invoke_agent(
