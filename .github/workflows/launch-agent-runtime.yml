@@ -9,7 +9,7 @@ on:
       - 'agents/**'
 
 jobs:
-  configure-runtime:
+  launch-runtime:
     runs-on: ubuntu-latest
     
     steps:
@@ -35,7 +35,7 @@ jobs:
       - name: Make script executable
         run: chmod +x .github/scripts/launch_agent_runtime.sh
 
-      - name: Run configure agent runtime script
+      - name: Run launch agent runtime script
         env:
           AWS_REGION: ${{ vars.AWS_REGION }}
           AGENT_NAME: ${{ vars.AGENT_NAME }}
