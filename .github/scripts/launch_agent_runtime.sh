@@ -38,6 +38,7 @@ if [ ! -d "$AGENTS_DIR" ]; then
 fi
 
 cd "$AGENTS_DIR"
+mkdir -p ".bedrock_agentcore/${AGENT_NAME}"
 
 # Lauch the agent runtime
 echo -e "${GREEN}Launching agent runtime...${NC}"
@@ -61,6 +62,7 @@ S3_PREFIX="agents/${AGENT_NAME}"
 S3_CONFIG_KEY="${S3_PREFIX}/.bedrock_agentcore.yaml"
 
 AGENTCORE_CONFIG_FILE="${AGENTS_DIR}/.bedrock_agentcore.yaml"
+AGENT_DOCKERFILE="${AGENTS_DIR}/.bedrock_agentcore/${AGENT_NAME}/Dockerfile"
 
 # Download the configuration file from S3
 echo "Downloading configuration file from s3://${S3_BUCKET_NAME}/${S3_CONFIG_KEY} ..."
@@ -70,6 +72,16 @@ else
     echo -e "${RED}Error: Failed to download configuration file from S3.${NC}"
     exit 1
 fi
+
+# Download the Dockerfile from S3
+S3_DOCKERFILE_KEY="${S3_PREFIX}/Dockerfile"
+echo "Downloading Dockerfile from s3://${S3_BUCKET_NAME}/${S3_DOCKERFILE_KEY} ..."
+if aws s3 cp "s3://${S3_BUCKET_NAME}/${S3_DOCKERFILE_KEY}" "${AGENT_DOCKERFILE}" --region "$AWS_REGION"; then
+    echo -e "${GREEN}✓ Dockerfile downloaded successfully.${NC}"
+else
+    echo -e "${RED}Error: Failed to download Dockerfile from S3.${NC}"
+    exit 1
+fi  
 
 # Launch the agent runtime using the configuration file
 echo "Launching agent runtime with configuration file..."
@@ -89,7 +101,9 @@ else
 fi
 
 # Get the agent runtime ARN
-AGENT_ARN=$(agentcore status -v | jq -r '.config.agent_arn')
+echo "Retrieving agent runtime ARN..."
+agentcore status -v | tr -d '\000-\037'
+AGENT_ARN=$(agentcore status -v | tr -d '\000-\037' | jq -r '.config.agent_arn')
 if [ -z "$AGENT_ARN" ]; then
     echo -e "${RED}Error: Could not retrieve agent ARN from agentcore status command.${NC}"
     exit 1
@@ -108,4 +122,3 @@ else
     echo -e "${RED}Error: Failed to store agent runtime ARN in SSM.${NC}"
     exit 1
 fi
-

@@ -119,6 +119,13 @@ if [ ! -f "$AGENTCORE_CONFIG_FILE" ]; then
     exit 1
 fi
 
+AGENT_DOCKERFILE="${AGENTS_DIR}/.bedrock_agentcore/${AGENT_NAME}/Dockerfile"
+if [ ! -f "$AGENT_DOCKERFILE" ]; then
+    echo -e "${RED}Error: Dockerfile not found at ${AGENT_DOCKERFILE}${NC}"
+    echo -e "${RED}agentcore configure may have failed to create the Dockerfile${NC}"
+    exit 1
+fi
+
 # Get agent artifacts S3 bucket name from SSM Parameter Store
 echo "Retrieving S3 bucket name from SSM..."
 S3_BUCKET_NAME=$(aws ssm get-parameter \
@@ -148,5 +155,19 @@ if aws s3 cp "$AGENTCORE_CONFIG_FILE" "s3://${S3_BUCKET_NAME}/${S3_CONFIG_KEY}" 
     echo -e "${GREEN}✓ Configuration file uploaded to S3 successfully${NC}"
 else
     echo -e "${RED}Error: Failed to upload configuration file to S3${NC}"
+    exit 1
+fi
+
+# Upload Dockerfile to S3
+echo "Uploading Dockerfile to S3..."
+S3_DOCKERFILE_KEY="${S3_PREFIX}/Dockerfile"
+echo "Bucket: ${S3_BUCKET_NAME}"
+echo "Key: ${S3_DOCKERFILE_KEY}"
+
+if aws s3 cp "$AGENT_DOCKERFILE" "s3://${S3_BUCKET_NAME}/${S3_DOCKERFILE_KEY}" \
+    --region "$AWS_REGION"; then
+    echo -e "${GREEN}✓ Dockerfile uploaded to S3 successfully${NC}"
+else
+    echo -e "${RED}Error: Failed to upload Dockerfile to S3${NC}"
     exit 1
 fi
