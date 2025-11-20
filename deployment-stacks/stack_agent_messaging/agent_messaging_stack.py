@@ -7,21 +7,29 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_iam as iam,
     aws_apigateway as apigw,
+    aws_ssm as ssm,
 )
 from constructs import Construct
-from shared_resource_config import SharedValues
+from shared_resource_config import SharedValues, SSMParameterPaths
 
 
 class AgentMessagingStack(Stack):
     """CDK stack for agent messaging resources."""
 
     def __init__(
-        self, scope: Construct, construct_id: str, shared_values: SharedValues, **kwargs
+        self,
+        scope: Construct,
+        construct_id: str,
+        shared_values: SharedValues,
+        ssm_paths: SSMParameterPaths,
+        **kwargs
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         user_pool = self._create_cognito_resources(shared_values)
-        messaging_function = self._create_messaging_function_resources(shared_values)
+        messaging_function = self._create_messaging_function_resources(
+            shared_values, ssm_paths
+        )
         self._create_messaging_api_resources(
             user_pool, messaging_function, shared_values
         )
@@ -68,7 +76,7 @@ class AgentMessagingStack(Stack):
         return user_pool
 
     def _create_messaging_function_resources(
-        self, shared_values: SharedValues
+        self, shared_values: SharedValues, ssm_paths: SSMParameterPaths
     ) -> _lambda.DockerImageFunction:
         """Create Lambda function for handling messaging."""
 
@@ -95,6 +103,10 @@ class AgentMessagingStack(Stack):
         for statement in custom_policy_statements:
             role.add_to_policy(statement)
 
+        tutor_agent_runtime_arn = ssm.StringParameter.value_for_string_parameter(
+            self, ssm_paths.agentcore_tutor_agent_runtime_arn
+        )
+
         messaging_function = _lambda.DockerImageFunction(
             self,
             shared_values.lambda_messaging_function_name,
@@ -104,6 +116,9 @@ class AgentMessagingStack(Stack):
             memory_size=256,
             timeout=Duration.minutes(1),
             architecture=_lambda.Architecture.X86_64,
+            environment={
+                "TUTOR_AGENT_RUNTIME_ARN": tutor_agent_runtime_arn,
+            },
         )
 
         return messaging_function

@@ -15,7 +15,9 @@ env = cdk.Environment(
     account=os.getenv("ACCOUNT_ID"), region=os.getenv("CDK_DEFAULT_REGION")
 )
 
-agent_messaging_stack = AgentMessagingStack(app, "AgentMessagingStack", shared_values)
+agent_messaging_stack = AgentMessagingStack(
+    app, "AgentMessagingStack", shared_values, ssm_parameter_paths, env=env
+)
 agents_stack = AgentsStack(app, "AgentsStack", shared_values, ssm_parameter_paths)
 
 agent_messaging_stack.add_dependency(agents_stack)

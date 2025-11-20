@@ -28,9 +28,7 @@ class Runtime:
     def get_runtime_arn(self) -> str:
         """Get the runtime ARN for the agent from SSM"""
 
-        # TODO: Uncomment when SSM is set up
-        # agent_arn = self.ssm_client.get_parameter(Name=self.arn_path)["Parameter"][
-        #     "Value"
-        # ]
-        agent_arn = "arn:aws:bedrock-agentcore:eu-central-1:442042519937:runtime/tutor_agent-B7GpkJ8mDO"
+        agent_arn = self.ssm_client.get_parameter(Name=self.arn_path)["Parameter"][
+            "Value"
+        ]
         return agent_arn
