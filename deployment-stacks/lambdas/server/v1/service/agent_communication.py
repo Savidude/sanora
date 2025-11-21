@@ -45,7 +45,7 @@ class AgentCommunicationService:
         )
         try:
             response = self.agentcore_client.invoke_agent_runtime(
-                agentRuntimeArn=agent_runtime.get_runtime_arn(),
+                agentRuntimeArn=agent_runtime.runtime_arn,
                 runtimeSessionId=session_id,
                 payload=payload,
                 qualifier="DEFAULT",  # Optional
@@ -58,6 +58,12 @@ class AgentCommunicationService:
             )
             return response
         except Exception as e:
+            logger.error(
+                "Error invoking agent runtime %s for session ID %s: %s",
+                agent_runtime.agent_type,
+                session_id,
+                str(e),
+            )
             raise AgentInvocationError(
                 f"Failed to invoke agent runtime {agent_runtime.agent_type}"
             ) from e

@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_ecr as ecr,
     aws_ssm as ssm,
     aws_s3 as s3,
+    aws_secretsmanager as secretsmanager,
     RemovalPolicy,
 )
 from constructs import Construct
@@ -65,6 +66,22 @@ class AgentsStack(Stack):
             string_value=agent_repository.repository_uri,
         )
 
+        # Secrets Manager secrets for agent API keys
+        gemini_agent_key_secret = secretsmanager.Secret(
+            self,
+            shared_values.secret_manager_gemini_api_key_name,
+            secret_name=shared_values.secret_manager_gemini_api_key_name,
+            description="API key for the Gemini agent",
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+        openai_agent_key_secret = secretsmanager.Secret(
+            self,
+            shared_values.secret_manager_openai_api_key_name,
+            secret_name=shared_values.secret_manager_openai_api_key_name,
+            description="API key for the OpenAI agent",
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
         # IAM role for agent execution
         agent_execution_role = iam.Role(
             self,
@@ -89,9 +106,23 @@ class AgentsStack(Stack):
                 resources=["*"],
             ),
             iam.PolicyStatement(
-                actions=["logs:DescribeLogStreams", "logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+                actions=[
+                    "logs:DescribeLogStreams",
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                ],
                 resources=[
                     f"arn:aws:logs:{self.region}:{self.account}:log-group:/aws/bedrock-agentcore/runtimes/*",
+                ],
+            ),
+            iam.PolicyStatement(
+                actions=[
+                    "secretsmanager:GetSecretValue",
+                ],
+                resources=[
+                    gemini_agent_key_secret.secret_arn,
+                    openai_agent_key_secret.secret_arn,
                 ],
             ),
         ]
@@ -247,7 +278,6 @@ class AgentsStack(Stack):
                     actions=[
                         "ssm:PutParameter",
                         "ssm:GetParameter",
-                        "ssm:GetParameters",
                         "ssm:DeleteParameter",
                     ],
                     resources=[
@@ -273,7 +303,7 @@ class AgentsStack(Stack):
                         "bedrock-agentcore:ListAgentRuntimes",
                         "bedrock-agentcore:CreateAgentRuntimeEndpoint",
                         "bedrock-agentcore:GetAgentRuntimeEndpoint",
-                        "bedrock-agentcore:CreateWorkloadIdentity"
+                        "bedrock-agentcore:CreateWorkloadIdentity",
                     ],
                     resources=["*"],
                 ),
