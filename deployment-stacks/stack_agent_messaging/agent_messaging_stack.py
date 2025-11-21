@@ -26,16 +26,16 @@ class AgentMessagingStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        user_pool = self._create_cognito_resources(shared_values)
+        user_pool = self._create_cognito_resources(shared_values, ssm_paths)
         messaging_function = self._create_messaging_function_resources(
             shared_values, ssm_paths
         )
         self._create_messaging_api_resources(
-            user_pool, messaging_function, shared_values
+            user_pool, messaging_function, shared_values, ssm_paths
         )
 
     def _create_cognito_resources(
-        self, shared_values: SharedValues
+        self, shared_values: SharedValues, ssm_paths: SSMParameterPaths
     ) -> cognito.UserPool:
         """Create Cognito User Pool and User Pool Client for authentication."""
 
@@ -53,8 +53,15 @@ class AgentMessagingStack(Stack):
             ),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
         )
+        # Store the User Pool ID in SSM Parameter Store
+        ssm.StringParameter(
+            self,
+            "CognitoUserPoolIdParameter",
+            parameter_name=ssm_paths.cognito_user_pool_id,
+            string_value=user_pool.user_pool_id,
+        )
 
-        user_pool.add_client(
+        user_pool_client = user_pool.add_client(
             shared_values.congnito_user_pool_client_name,
             auth_flows=cognito.AuthFlow(user_password=True, user_srp=True),
             generate_secret=False,
@@ -71,6 +78,13 @@ class AgentMessagingStack(Stack):
             supported_identity_providers=[
                 cognito.UserPoolClientIdentityProvider.COGNITO
             ],
+        )
+        # Store the User Pool Client ID in SSM Parameter Store
+        ssm.StringParameter(
+            self,
+            "CognitoUserPoolClientIdParameter",
+            parameter_name=ssm_paths.cognito_user_pool_client_id,
+            string_value=user_pool_client.user_pool_client_id,
         )
 
         return user_pool
@@ -128,6 +142,7 @@ class AgentMessagingStack(Stack):
         user_pool: cognito.UserPool,
         messaging_function: _lambda.DockerImageFunction,
         shared_values: SharedValues,
+        ssm_paths: SSMParameterPaths,
     ) -> None:
         """Create API Gateway resources for messaging API."""
 
@@ -188,4 +203,12 @@ class AgentMessagingStack(Stack):
             apigw.LambdaIntegration(messaging_function, proxy=True),
             authorization_type=apigw.AuthorizationType.COGNITO,
             authorizer=authorizer,
+        )
+
+        # Store the API endpoint in SSM Parameter Store
+        ssm.StringParameter(
+            self,
+            "MessagingApiEndpointParameter",
+            parameter_name=ssm_paths.apigw_messaging_service_url,
+            string_value=messaging_api.url,
         )

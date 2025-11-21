@@ -1,16 +1,48 @@
 """Base agent class for creating generic agents with different models and prompts."""
 
-import os
+import json
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
 from typing import Dict, Any, Union, List
+
+import boto3
+from botocore.exceptions import ClientError
 
 from strands import Agent
 from strands.agent.agent_result import AgentResult
 from strands.types.content import Message, ContentBlock
 from strands.models.openai import OpenAIModel
 from strands.models.gemini import GeminiModel
+
+
+def get_api_key_from_secret(key_name: str, secret_name: str = "AgentKeys") -> str:
+    """
+    Retrieve an API key from AWS Secrets Manager.
+
+    Args:
+        key_name: The name of the key within the secret (e.g., 'OpenAIApiKey' or 'GeminiApiKey')
+        secret_name: The name of the secret in AWS Secrets Manager (default: 'AgentKeys')
+
+    Returns:
+        str: The API key value
+
+    Raises:
+        ClientError: If the secret cannot be retrieved
+        KeyError: If the key is not found in the secret
+    """
+    session = boto3.session.Session()
+    client = session.client(service_name="secretsmanager")
+
+    try:
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+        secret_string = get_secret_value_response["SecretString"]
+        secret_dict = json.loads(secret_string)
+        return secret_dict[key_name]
+    except ClientError as e:
+        raise e
+    except KeyError as exc:
+        raise KeyError(f"Key '{key_name}' not found in secret '{secret_name}'") from exc
 
 
 class ModelType(str, Enum):
@@ -147,15 +179,23 @@ class AgentFactory:
         Args:
             prompt_path: Path to the prompt file
             model_id: OpenAI model ID (OpenAIModelId enum)
-            api_key: OpenAI API key (if None, reads from OPENAI_API_KEY env var)
+            api_key: OpenAI API key (if None, retrieves from AWS Secrets Manager)
             agent_type: Type of agent (AgentType enum)
 
         Returns:
             BaseAgent: Configured agent instance
         """
+        if api_key is None:
+            try:
+                api_key = get_api_key_from_secret("OpenAIApiKey")
+            except (ClientError, KeyError) as e:
+                raise ValueError(
+                    f"OpenAI API key not found in parameters or AWS Secrets Manager: {e}"
+                ) from e
+
         model_config = {
             "client_args": {
-                "api_key": api_key or os.getenv("OPENAI_API_KEY"),
+                "api_key": api_key,
             },
             "model_id": model_id.value,
         }
@@ -180,15 +220,23 @@ class AgentFactory:
         Args:
             prompt_path: Path to the prompt file
             model_id: Gemini model ID (GeminiModelId enum)
-            api_key: Gemini API key (if None, reads from GEMINI_API_KEY env var)
+            api_key: Gemini API key (if None, retrieves from AWS Secrets Manager)
             agent_type: Type of agent (AgentType enum)
 
         Returns:
             BaseAgent: Configured agent instance
         """
+        if api_key is None:
+            try:
+                api_key = get_api_key_from_secret("GeminiApiKey")
+            except (ClientError, KeyError) as e:
+                raise ValueError(
+                    f"Gemini API key not found in parameters or AWS Secrets Manager: {e}"
+                ) from e
+
         model_config = {
             "client_args": {
-                "api_key": api_key or os.getenv("GEMINI_API_KEY"),
+                "api_key": api_key,
             },
             "model_id": model_id.value,
         }
