@@ -1,0 +1,109 @@
+name: Deploy CDK Stacks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deployment-stacks/**'
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: 'Stack to deploy (all, agents, messaging, frontend)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - agents
+          - messaging
+          - frontend
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      agents: ${{ steps.filter.outputs.agents }}
+      messaging: ${{ steps.filter.outputs.messaging }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            agents:
+              - 'deployment-stacks/stack_agents/**'
+              - 'deployment-stacks/shared_resource_config.py'
+              - 'deployment-stacks/app.py'
+            messaging:
+              - 'deployment-stacks/stack_agent_messaging/**'
+              - 'deployment-stacks/lambdas/server/**'
+              - 'deployment-stacks/shared_resource_config.py'
+              - 'deployment-stacks/app.py'
+            frontend:
+              - 'deployment-stacks/stack_frontend/**'
+              - 'deployment-stacks/shared_resource_config.py'
+              - 'deployment-stacks/app.py'
+
+  deploy-agents:
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.agents == 'true' || 
+      github.event.inputs.stack == 'all' || 
+      github.event.inputs.stack == 'agents'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/setup-cdk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      - name: Deploy AgentsStack
+        run: |
+          cd deployment-stacks
+          cdk deploy AgentsStack --require-approval never
+
+  deploy-messaging:
+    needs: [detect-changes, deploy-agents]
+    if: |
+      always() &&
+      (needs.deploy-agents.result == 'success' || needs.deploy-agents.result == 'skipped') &&
+      (needs.detect-changes.outputs.messaging == 'true' || 
+       github.event.inputs.stack == 'all' || 
+       github.event.inputs.stack == 'messaging')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/setup-cdk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      - name: Deploy AgentMessagingStack
+        run: |
+          cd deployment-stacks
+          cdk deploy AgentMessagingStack --require-approval never
+
+  deploy-frontend:
+    needs: [detect-changes, deploy-messaging]
+    if: |
+      always() &&
+      (needs.deploy-messaging.result == 'success' || needs.deploy-messaging.result == 'skipped') &&
+      (needs.detect-changes.outputs.frontend == 'true' || 
+       github.event.inputs.stack == 'all' || 
+       github.event.inputs.stack == 'frontend')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/setup-cdk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      - name: Deploy FrontendStack
+        env:
+          GITHUB_TOKEN: ${{ secrets.FRONTEND_GITHUB_TOKEN }}
+        run: |
+          cd deployment-stacks
+          cdk deploy FrontendStack --require-approval never

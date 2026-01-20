@@ -45,6 +45,8 @@ class SSMParameterPaths:
     SSM Parameter Store paths for shared resources.
     """
 
+    env: str = "/sanora/env" # added manually, possible values: "dev"/"stg"/"prd"
+
     iam_tutor_agent_execution_role_arn: str = (
         "/sanora/iam/tutor_agent_execution_role_arn"
     )

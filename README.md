@@ -119,6 +119,38 @@ sanora/
 - Google Gemini API key (for Teacher Agent)
 - GitHub account with repository access
 
+- **Forked frontend repository:**
+  1. Go to https://github.com/Savidude/sanora-frontend
+  2. Click **Fork** to create your own copy
+  3. Clone your forked repository locally (optional, for development)
+- **GitHub Personal Access Token:**
+  1. Go to GitHub **Settings > Developer settings > Personal access tokens > Tokens (classic)**
+  2. Click **Generate new token (classic)**
+  3. Give it a descriptive name (e.g., "Sanora Amplify Deployment")
+  4. Select the following scopes:
+     - `repo` (all sub-scopes)
+     - `admin:repo_hook` (all sub-scopes)
+  5. Click **Generate token**
+  6. **Copy the token immediately** (you won't be able to see it again)
+  7. Set as environment variable: `export GITHUB_TOKEN="your-github-personal-access-token"`
+  8. **Important:** Keep this token secure. Do not commit it to version control.
+
+- **AWS SSM Parameter for Environment:**
+  
+  Create an SSM parameter to specify your deployment environment:
+  
+  ```bash
+  # Set your environment (dev, stg, or prd)
+  aws ssm put-parameter \
+    --name "/sanora/env" \
+    --value "dev" \
+    --type "String" \
+    --description "Sanora deployment environment" \
+    --region $CDK_DEFAULT_REGION
+  ```
+  
+  **Note:** Change the value to `stg` (staging) or `prd` (production) as appropriate for your deployment.
+
 ### Step 1: Deploy the AgentsStack
 
 The AgentsStack creates the foundational infrastructure for your AI agents.
@@ -154,28 +186,51 @@ This creates:
 
 Use GitHub Actions workflows to build and deploy your AI agent to Bedrock AgentCore.
 
-#### 2.1 Configure GitHub Repository Secrets and Variables
+#### 2.1 Create IAM User for GitHub Actions
+
+Create an IAM user with permissions to deploy the agent to Bedrock AgentCore:
+
+1. **Create the IAM user:**
+   ```bash
+   aws iam create-user --user-name sanora-agentcore-cicd-user
+   ```
+
+2. **Attach the CI/CD policy** (created by AgentsStack in Step 1):
+   ```bash
+   aws iam attach-user-policy \
+     --user-name sanora-agentcore-cicd-user \
+     --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/SanoraAgentcoreCICDUserPolicy
+   ```
+
+3. **Create access keys:**
+   ```bash
+   aws iam create-access-key --user-name sanora-agentcore-cicd-user
+   ```
+   
+   **Important:** Save the `AccessKeyId` and `SecretAccessKey` from the output. You'll need these in the next step.
+
+#### 2.2 Configure GitHub Repository Secrets and Variables
 
 In your GitHub repository, navigate to **Settings > Secrets and variables > Actions** and add:
 
 **Secrets:**
-- `AWS_ACCESS_KEY_ID` - AWS access key with AgentCore permissions
-- `AWS_SECRET_ACCESS_KEY` - AWS secret access key
+- `AWS_AGENTS_ACCESS_KEY_ID` - The AccessKeyId from the IAM user created in Step 2.1
+- `AWS_AGENTS_SECRET_ACCESS_KEY` - The SecretAccessKey from the IAM user created in Step 2.1
+- `AWS_ACCESS_KEY_ID` - The access key to your AWS deployment account environment
+- `AWS_SECRET_ACCESS_KEY` - The secret access key to your AWS deployment account environment
 
 **Variables:**
 - `AWS_REGION` - Your AWS region (e.g., `eu-central-1`)
 - `AGENT_NAME` - Name for your agent runtime (e.g., `tutor-agent`)
 
-The IAM user must have the `SanoraAgentcoreCICDUserPolicy` managed policy attached (created by AgentsStack).
-
-#### 2.2 Run the Configuration Workflow
+#### 2.3 Run the Configuration Workflow
 
 1. Go to **Actions** tab in your GitHub repository
 2. Select the **Configure Agent Runtime** workflow
 3. Click **Run workflow**
 4. Wait for completion (configures the agent runtime settings)
 
-#### 2.3 Run the Launch Workflow
+#### 2.4 Run the Launch Workflow
 
 1. Select the **Launch Agent Runtime** workflow
 2. Click **Run workflow**
@@ -228,34 +283,7 @@ This creates:
 - API Gateway with Cognito authorizer
 - SSM parameters with API endpoint URL
 
-### Step 5: Set Up Frontend Repository
-
-#### 5.1 Fork the Frontend Repository
-
-1. Go to https://github.com/Savidude/sanora-frontend
-2. Click **Fork** to create your own copy
-3. Clone your forked repository locally (optional, for development)
-
-#### 5.2 Create GitHub Personal Access Token
-
-1. Go to GitHub **Settings > Developer settings > Personal access tokens > Tokens (classic)**
-2. Click **Generate new token (classic)**
-3. Give it a descriptive name (e.g., "Sanora Amplify Deployment")
-4. Select the following scopes:
-   - `repo` (all sub-scopes)
-   - `admin:repo_hook` (all sub-scopes)
-5. Click **Generate token**
-6. **Copy the token immediately** (you won't be able to see it again)
-
-#### 5.3 Set the GitHub Token as Environment Variable
-
-```bash
-export GITHUB_TOKEN="your-github-personal-access-token"
-```
-
-**Important:** Keep this token secure. Do not commit it to version control.
-
-### Step 6: Update Shared Resource Configuration
+### Step 5: Update Shared Resource Configuration
 
 Update the frontend repository details in the configuration file:
 
@@ -270,7 +298,7 @@ amplify_github_repo_owner: str = "YourGitHubUsername"
 amplify_github_repo_name: str = "sanora-frontend"  # or your fork name
 ```
 
-### Step 7: Deploy the FrontendStack
+### Step 6: Deploy the FrontendStack
 
 Deploy the Amplify application:
 
@@ -288,9 +316,9 @@ This creates:
 - Configures automatic deployments from the `main` branch
 - Sets up environment variables from SSM parameters
 
-### Step 8: Access Your Application
+### Step 7: Access Your Application
 
-#### 8.1 Get the Amplify App URL
+#### 7.1 Get the Amplify App URL
 
 Retrieve your application URL:
 
@@ -307,7 +335,7 @@ Or via AWS Console:
 2. Select your **SanoraFrontendApp**
 3. Find the URL under the **main** branch deployment
 
-#### 8.2 Update Cognito Callback URLs (Important!)
+#### 7.2 Update Cognito Callback URLs (Important!)
 
 Once you have the Amplify URL, update the Cognito User Pool Client callback URLs:
 
