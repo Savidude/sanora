@@ -8,7 +8,7 @@
   "extractor_agent": {
     "prompt_path": "prompts/prompt_agent_extractor.txt",
     "model_type": "openai",
-    "model_id": "gpt-4o",
+    "model_id": "gpt-4o-mini",
     "agent_type": "content"
   }
 }
