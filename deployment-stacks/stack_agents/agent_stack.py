@@ -26,11 +26,13 @@ class AgentsStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        env = ssm.StringParameter.value_for_string_parameter(self, ssm_paths.env)
+
         # S3 bucket for agent artifacts
         agent_artifacts_bucket = s3.Bucket(
             self,
             shared_values.s3_agent_artifacts_bucket_name,
-            bucket_name=shared_values.s3_agent_artifacts_bucket_name,
+            bucket_name=f"{shared_values.s3_agent_artifacts_bucket_name}-{env}",
             removal_policy=RemovalPolicy.RETAIN,
             auto_delete_objects=False,
         )
