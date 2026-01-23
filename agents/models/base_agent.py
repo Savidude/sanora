@@ -39,9 +39,11 @@ def get_api_key(secret_name: str) -> str:
     if env_value:
         logger.info("Retrieved API key '%s' from environment variable", secret_name)
         return env_value
-    
+
     # Fall back to AWS Secrets Manager
-    logger.info("Environment variable '%s' not found, checking AWS Secrets Manager", secret_name)
+    logger.info(
+        "Environment variable '%s' not found, checking AWS Secrets Manager", secret_name
+    )
     session = boto3.session.Session()
     client = session.client(service_name="secretsmanager")
 
@@ -66,6 +68,7 @@ class OpenAIModelId(str, Enum):
     """Supported OpenAI model IDs."""
 
     GPT_4O = "gpt-4o"
+    GPT_4O_MINI = "gpt-4o-mini"
 
 
 class GeminiModelId(str, Enum):

@@ -309,5 +309,31 @@ class AgentsStack(Stack):
                     ],
                     resources=["*"],
                 ),
+                iam.PolicyStatement(
+                    sid="CreateAgentCoreNetworkSLR",
+                    effect=iam.Effect.ALLOW,
+                    actions=["iam:CreateServiceLinkedRole"],
+                    resources=[
+                        "arn:aws:iam::*:role/aws-service-role/network.bedrock-agentcore.amazonaws.com/AWSServiceRoleForBedrockAgentCoreNetwork"
+                    ],
+                    conditions={
+                        "StringLike": {
+                            "iam:AWSServiceName": "network.bedrock-agentcore.amazonaws.com"
+                        }
+                    },
+                ),
+                iam.PolicyStatement(
+                    sid="CreateAgentCoreRuntimeIdentitySLR",
+                    effect=iam.Effect.ALLOW,
+                    actions=["iam:CreateServiceLinkedRole"],
+                    resources=[
+                        "arn:aws:iam::*:role/aws-service-role/runtime-identity.bedrock-agentcore.amazonaws.com/AWSServiceRoleForBedrockAgentCoreRuntimeIdentity"
+                    ],
+                    conditions={
+                        "StringEquals": {
+                            "iam:AWSServiceName": "runtime-identity.bedrock-agentcore.amazonaws.com"
+                        }
+                    },
+                ),
             ],
         )
