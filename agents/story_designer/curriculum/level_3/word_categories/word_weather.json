@@ -1,0 +1,6 @@
+{
+  "id": "wc_3_weather",
+  "code": "weather",
+  "name": "Weather",
+  "description": "The state of the atmosphere at a place and time. Examples: sunny, rainy, windy, snowy."
+}

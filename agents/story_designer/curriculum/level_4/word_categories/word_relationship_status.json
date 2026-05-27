@@ -1,0 +1,6 @@
+{
+  "id": "wc_4_relationship_status",
+  "code": "relationship_status",
+  "name": "Relationship status",
+  "description": "The state of a person's romantic or social connections to others. Examples: single, married, in a relationship."
+}

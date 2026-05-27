@@ -1,0 +1,6 @@
+{
+  "id": "gc_5_pronoun_negative_verb",
+  "code": "pronoun_negative_verb",
+  "name": "Personal pronoun + negative verb",
+  "description": "A pronoun followed by a negative verb. Examples: I don't know, He doesn't want to go."
+}

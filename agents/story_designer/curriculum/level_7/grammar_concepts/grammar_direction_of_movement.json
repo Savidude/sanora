@@ -1,0 +1,6 @@
+{
+  "id": "gc_7_direction_of_movement",
+  "code": "direction_of_movement",
+  "name": "Direction of movement (towards/static/away)",
+  "description": "Indicates the path or course of movement. Examples: towards the store, away from the house, static in the room."
+}

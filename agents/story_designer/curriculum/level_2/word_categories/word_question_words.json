@@ -1,0 +1,6 @@
+{
+  "id": "wc_2_question_words",
+  "code": "question_words",
+  "name": "Question words",
+  "description": "Words used to ask questions. Examples: who, what, where, when, why, how."
+}

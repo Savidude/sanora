@@ -1,0 +1,6 @@
+{
+  "id": "gc_3_possessive_case",
+  "code": "possessive_case",
+  "name": "Possessive case (whose, of what)",
+  "description": "Shows ownership. Examples: whose, of what, the dog's bone."
+}

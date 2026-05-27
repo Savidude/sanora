@@ -1,0 +1,6 @@
+{
+  "id": "wc_2_cardinal_directions",
+  "code": "cardinal_directions",
+  "name": "Cardinal directions",
+  "description": "The four main points of the compass. Examples: north, south, east, west."
+}

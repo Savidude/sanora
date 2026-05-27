@@ -1,0 +1,6 @@
+{
+  "id": "gc_2_negative_sentences",
+  "code": "negative_sentences",
+  "name": "Negative sentences",
+  "description": "Sentences that state something is not true. Examples: I am not hungry, He is not here."
+}

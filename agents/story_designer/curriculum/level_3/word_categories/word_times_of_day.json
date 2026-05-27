@@ -1,0 +1,6 @@
+{
+  "id": "wc_3_times_of_day",
+  "code": "times_of_day",
+  "name": "Times of day (morning, afternoon, etc.)",
+  "description": "A period of the day. Examples: morning, afternoon, evening, night."
+}

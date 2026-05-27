@@ -1,0 +1,6 @@
+{
+  "id": "wc_4_occupational_status",
+  "code": "occupational_status",
+  "name": "Occupational status",
+  "description": "A person's job or profession. Examples: doctor, teacher, engineer, artist."
+}
