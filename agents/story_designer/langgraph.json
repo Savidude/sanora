@@ -1,7 +1,0 @@
-{
-  "graphs": {
-    "story_designer": "./graph.py:graph"
-  },
-  "env": ".env",
-  "dependencies": ["."]
-}

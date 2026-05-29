@@ -1,0 +1,9 @@
+{
+  "graphs": {
+    "story_designer": "story_designer.graph:graph"
+  },
+  "env": ".env",
+  "dependencies": ["."],
+  "python_version": "3.12",
+  "python_packages": []
+}

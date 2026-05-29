@@ -1,10 +1,10 @@
 """Contains nodes responsible for orchestrating the agents in the Story Designer."""
 
-from state import StoryState
-
 from langchain_core.messages import SystemMessage
-from models.curriculum import Curriculum
-from models.progress import Progress, GrammarConceptProgress, WordCategoryProgress
+
+from ..state import StoryState
+from ..models.curriculum import Curriculum
+from ..models.progress import Progress, GrammarConceptProgress, WordCategoryProgress
 
 STORY_OPENING = """SCENE: A hotel lobby, the morning of a life-changing job interview.
 
@@ -38,8 +38,10 @@ def _initialize_progress() -> Progress:
 
 def initialise_story(state: StoryState) -> dict:  # pylint: disable=unused-argument
     """Initialise the story state."""
-    narrator_message = SystemMessage(content=STORY_OPENING)
+    story_opening = SystemMessage(content=STORY_OPENING)
     return {
-        "messages": [narrator_message],
+        "messages": [story_opening],
+        "story_lines": [f"--- {STORY_OPENING.strip()} ---"],
         "progress": _initialize_progress(),
+        "wind_down": False,
     }
