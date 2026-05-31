@@ -37,3 +37,10 @@ class Progress(BaseModel):
         return sorted(self.word_category_progress, key=lambda wc: wc.total_occurrences)[
             :10
         ]
+
+    def get_grammar_progress(self, grammar_concept_code: str) -> GrammarConceptProgress:
+        """Get the progress for a specific grammar concept code."""
+        for progress in self.grammar_concept_progress:
+            if progress.grammar_concept_code == grammar_concept_code:
+                return progress
+        raise ValueError(f"Grammar concept code '{grammar_concept_code}' not found")

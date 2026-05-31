@@ -1,3 +1,7 @@
+"""Inspector node implementation for analyzing candidate story lines and providing insights on
+grammar concepts and word categories.
+"""
+
 from pathlib import Path
 
 from langchain_google_genai import ChatGoogleGenerativeAI

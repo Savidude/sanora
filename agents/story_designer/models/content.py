@@ -32,4 +32,4 @@ class Phrase(BaseModel):
     """
 
     content: str
-    analyses: list[PhraseAnalysis] = []
+    analysis: PhraseAnalysis
