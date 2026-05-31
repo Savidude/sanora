@@ -6,6 +6,8 @@ from ..state import StoryState
 from ..models.curriculum import Curriculum
 from ..models.progress import Progress, GrammarConceptProgress, WordCategoryProgress
 
+CURRICULUM: Curriculum = Curriculum.load()
+
 STORY_OPENING = """SCENE: A hotel lobby, the morning of a life-changing job interview.
 
 Pip has just opened their suitcase in the room and found the wrong one — inside:
@@ -19,15 +21,14 @@ The story begins now.
 def _initialize_progress() -> Progress:
     """Initialise the progress tracking for a story design session, based on the curriculum."""
 
-    curriculum = Curriculum.load()
     grammar_concept_progress = [
         GrammarConceptProgress(grammar_concept_code=gc.code)
-        for level in curriculum.levels
+        for level in CURRICULUM.levels
         for gc in level.grammar_concepts
     ]
     word_category_progress = [
         WordCategoryProgress(word_category_code=wc.code)
-        for level in curriculum.levels
+        for level in CURRICULUM.levels
         for wc in level.word_categories
     ]
     return Progress(

@@ -25,7 +25,6 @@ class Character(BaseModel):
     name: str
     model: LlmModel
     max_tokens: int = 256
-    system_prompt: str
 
 
 def _build_system_prompt(system_prompt: str, wind_down: bool) -> str:

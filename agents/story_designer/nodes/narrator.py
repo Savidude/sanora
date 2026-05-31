@@ -1,30 +1,19 @@
 """Contains nodes required for the functioning of the narrator agent"""
 
+from pathlib import Path
+
 from langchain_aws import ChatBedrockConverse
 from langgraph.types import Send
 
 from ..characters import Character, LlmModel, build_messages_for_character
 from ..state import StoryState
 from .protagonist import PROTAGONIST
+from .util import generate_grammar_concept_lines
 
 NARRATOR = Character(
     name="Narrator",
     model=LlmModel.OPENAI_GPT_OSS_20B,
     max_tokens=256,
-    system_prompt=(
-        """You are the Narrator of a short story for adults learning English.
-        
-        YOUR ROLE:
-        - Say only the most important thing happening right now.
-        - Use short, simple sentences.
-        - Use common, everyday words that average adults use in daily life.
-        - Use very little description.
-        - Give voice to simple side characters when needed, such as a guard, a stranger, etc.
-        - ALWAYS end your final sentence with a direct nudge for the user — a short question or a clear cue (e.g. "Will you go in?"). Never end a turn without this nudge.
-        - Write no more than 3 sentences per turn.
-        - Prefer 1 or 2 short sentences unless 3 are really needed.
-        """
-    ),
 )
 
 
@@ -34,6 +23,26 @@ def _extract_text(content) -> str:
     return "".join(
         block.get("text", "") if isinstance(block, dict) else str(block)
         for block in content
+    )
+
+
+def _build_system_prompt_for_narrator(state: StoryState) -> str:
+    """Build the system prompt for the narrator by loading the template and populating it with
+    curriculum-based content about grammar concepts"""
+
+    narrator_prompt_template = (
+        Path(__file__).parent.parent / "prompts" / "narrator_prompt_template.md"
+    )
+
+    unidentified_grammar_concepts = state[
+        "progress"
+    ].get_unidentified_grammar_concepts()
+
+    grammar_concept_lines = generate_grammar_concept_lines(
+        unidentified_grammar_concepts
+    )
+    return narrator_prompt_template.replace(
+        "<GRAMMAR_CONCEPTS>", "\n".join(grammar_concept_lines)
     )
 
 
@@ -50,7 +59,7 @@ def narrator_variation(state: StoryState) -> dict:
         story_lines=state.get("story_lines", []),
         speaker_name=NARRATOR.name,
         other_name=PROTAGONIST.name,
-        system_prompt=NARRATOR.system_prompt,
+        system_prompt=_build_system_prompt_for_narrator,
         wind_down=state.get("wind_down", False),
     )
 

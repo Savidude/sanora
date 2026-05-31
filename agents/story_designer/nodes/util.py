@@ -1,0 +1,28 @@
+"""Utility functions for the Story Designer nodes"""
+
+from .orchestration import CURRICULUM
+from ..models.progress import GrammarConceptProgress, WordCategoryProgress
+
+
+def generate_grammar_concept_lines(
+    unidentified_concepts: list[GrammarConceptProgress],
+) -> list[str]:
+    """Generate formatted strings for unidentified grammar concepts."""
+
+    lookup = CURRICULUM.grammar_concept_lookup
+    return [
+        f"- {concept.code}: {concept.description}"
+        for gc in unidentified_concepts
+        if (concept := lookup.get(gc.grammar_concept_code))
+    ]
+
+
+def generate_word_category_lines(categories: list[WordCategoryProgress]) -> list[str]:
+    """Generate formatted strings for least identified word categories."""
+
+    lookup = CURRICULUM.word_category_lookup
+    return [
+        f"- {category.code}: {category.description}"
+        for wc in categories
+        if (category := lookup.get(wc.word_category_code))
+    ]

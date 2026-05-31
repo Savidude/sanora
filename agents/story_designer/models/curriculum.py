@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from functools import cached_property
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -71,6 +72,24 @@ class Curriculum(BaseModel):
             )
 
         return cls(levels=levels)
+
+    @cached_property
+    def grammar_concept_lookup(self) -> dict[str, GrammarConcept]:
+        """Lookup dictionary of grammar concepts from curriculum."""
+        lookup: dict[str, GrammarConcept] = {}
+        for level in self.levels:
+            for grammar_concept in level.grammar_concepts:
+                lookup[grammar_concept.code] = grammar_concept
+        return lookup
+
+    @cached_property
+    def word_category_lookup(self) -> dict[str, WordCategory]:
+        """Lookup dictionary of word categories from curriculum."""
+        lookup: dict[str, WordCategory] = {}
+        for level in self.levels:
+            for word_category in level.word_categories:
+                lookup[word_category.code] = word_category
+        return lookup
 
 
 def _load_items[T](folder: Path, model: type[T]) -> list[T]:

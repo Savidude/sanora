@@ -7,9 +7,18 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
 from .models.progress import Progress
+from .models.content import Phrase
 
 
 def _candidates_reducer(existing: list[str], update: list[str] | None) -> list[str]:
+    if update is None:
+        return []
+    return existing + update
+
+
+def _inspector_results_reducer(
+    existing: list[Phrase], update: list[Phrase] | None
+) -> list[Phrase]:
     if update is None:
         return []
     return existing + update
@@ -21,5 +30,6 @@ class StoryState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     story_lines: list[str]
     narrator_candidates: Annotated[list[str], _candidates_reducer]
+    inspector_results: Annotated[list[Phrase], _inspector_results_reducer]
     progress: Progress
     wind_down: bool

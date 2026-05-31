@@ -27,3 +27,13 @@ class Progress(BaseModel):
 
     grammar_concept_progress: list[GrammarConceptProgress] = []
     word_category_progress: list[WordCategoryProgress] = []
+
+    def get_unidentified_grammar_concepts(self) -> list[GrammarConceptProgress]:
+        """Filter grammar concepts that haven't been identified yet."""
+        return [gc for gc in self.grammar_concept_progress if not gc.identified]
+
+    def get_least_identified_word_categories(self) -> list[WordCategoryProgress]:
+        """Get the 10 least identified word categories sorted by occurrence."""
+        return sorted(self.word_category_progress, key=lambda wc: wc.total_occurrences)[
+            :10
+        ]
