@@ -38,7 +38,7 @@ def build_messages_for_character(
     speaker_name: str,
     other_name: str,
     system_prompt: str,
-    wind_down: bool,
+    wind_down: bool = False,
 ) -> list:
     """Build a history of messages for a character's turn based on the current story lines.
     Previous messages sent by the character are portrayed as AI messages, while messages from

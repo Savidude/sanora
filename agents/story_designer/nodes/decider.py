@@ -10,10 +10,7 @@ from .narrator import NARRATOR
 
 def _get_identified_grammar_concepts(inspector_result: Phrase) -> list[str]:
     """Extract identified grammar concepts from an inspector result."""
-    return [
-        f.grammar_concept_code
-        for f in inspector_result.analysis.grammar_findings
-    ]
+    return [f.grammar_concept_code for f in inspector_result.analysis.grammar_findings]
 
 
 def _score_phrase(inspector_result: Phrase, progress: Progress) -> int:
@@ -54,4 +51,5 @@ def decider(state: StoryState) -> dict:
         "story_lines": new_story_lines,
         "narrator_candidates": None,
         "inspector_results": None,
+        "pending_analyses": best_phrase.analysis,
     }

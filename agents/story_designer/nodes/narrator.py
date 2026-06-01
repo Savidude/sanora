@@ -41,7 +41,7 @@ def _build_system_prompt_for_narrator(state: StoryState) -> str:
     grammar_concept_lines = generate_grammar_concept_lines(
         unidentified_grammar_concepts
     )
-    return narrator_prompt_template.replace(
+    return narrator_prompt_template.read_text().replace(
         "<GRAMMAR_CONCEPTS>", "\n".join(grammar_concept_lines)
     )
 
@@ -59,7 +59,7 @@ def narrator_variation(state: StoryState) -> dict:
         story_lines=state.get("story_lines", []),
         speaker_name=NARRATOR.name,
         other_name=PROTAGONIST.name,
-        system_prompt=_build_system_prompt_for_narrator,
+        system_prompt=_build_system_prompt_for_narrator(state),
         wind_down=state.get("wind_down", False),
     )
 

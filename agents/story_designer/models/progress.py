@@ -44,3 +44,24 @@ class Progress(BaseModel):
             if progress.grammar_concept_code == grammar_concept_code:
                 return progress
         raise ValueError(f"Grammar concept code '{grammar_concept_code}' not found")
+
+    def update_grammar_concept_progress(
+        self, grammar_concept_code: str, count: int = 1
+    ) -> None:
+        """Update the progress for a specific grammar concept code."""
+        for progress in self.grammar_concept_progress:
+            if progress.grammar_concept_code == grammar_concept_code:
+                progress.total_findings += count
+                progress.identified = True
+                return
+        raise ValueError(f"Grammar concept code '{grammar_concept_code}' not found")
+
+    def update_word_category_progress(
+        self, word_category_code: str, count: int = 1
+    ) -> None:
+        """Update the progress for a specific word category code."""
+        for progress in self.word_category_progress:
+            if progress.word_category_code == word_category_code:
+                progress.total_occurrences += count
+                return
+        raise ValueError(f"Word category code '{word_category_code}' not found")

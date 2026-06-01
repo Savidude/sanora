@@ -8,6 +8,8 @@ from .nodes.orchestration import initialise_story
 from .nodes.narrator import narrator_fan_out, narrator_variation
 from .nodes.inspector import inspector_fan_out, inspector
 from .nodes.decider import decider
+from .nodes.aggregator import aggregator
+from .nodes.protagonist import protagonist_turn
 
 builder = StateGraph(StoryState)
 
@@ -15,6 +17,8 @@ builder.add_node("initialise_story", initialise_story)
 builder.add_node("narrator_variation", narrator_variation)
 builder.add_node("inspector", inspector)
 builder.add_node("decider", decider)
+builder.add_node("aggregator", aggregator)
+builder.add_node("protagonist_turn", protagonist_turn)
 
 builder.add_edge(START, "initialise_story")
 builder.add_conditional_edges(
@@ -22,6 +26,8 @@ builder.add_conditional_edges(
 )
 builder.add_conditional_edges("narrator_variation", inspector_fan_out, ["inspector"])
 builder.add_edge("inspector", "decider")
-builder.add_edge("decider", END)
+builder.add_edge("decider", "aggregator")
+builder.add_edge("decider", "protagonist_turn")
+builder.add_edge("aggregator", END)
 
 graph = builder.compile()
