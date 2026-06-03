@@ -5,7 +5,7 @@ results and updating the story state.
 from ..state import StoryState
 from ..models.content import Phrase
 from ..models.progress import Progress
-from .narrator import NARRATOR
+from ..characters import NARRATOR
 
 
 def _get_identified_grammar_concepts(inspector_result: Phrase) -> list[str]:

@@ -70,7 +70,7 @@ def inspector(state: StoryState) -> dict:
         ]
     )
 
-    phrase = Phrase(content=candidate_text, analyses=[response])
+    phrase = Phrase(content=candidate_text, analysis=response)
     return {
         "inspector_results": [phrase],
     }

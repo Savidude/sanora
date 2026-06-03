@@ -70,3 +70,16 @@ def build_messages_for_character(
             messages.append(HumanMessage(content=content))
 
     return messages
+
+
+PROTAGONIST = Character(
+    name="Protagonist",
+    model=LlmModel.AMAZON_NOVA_MICRO,
+    max_tokens=64,
+)
+
+NARRATOR = Character(
+    name="Narrator",
+    model=LlmModel.OPENAI_GPT_OSS_20B,
+    max_tokens=256,
+)

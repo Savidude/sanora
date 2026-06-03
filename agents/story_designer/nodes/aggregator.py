@@ -29,3 +29,13 @@ def aggregator(state: StoryState) -> dict:
 
     for word_category_code, count in word_counts.items():
         progress.update_word_category_progress(word_category_code, count)
+
+    wind_down = (
+        state.get("wind_down", False)
+        or len(progress.get_unidentified_grammar_concepts()) == 0
+    )
+    return {
+        "progress": progress,
+        "pending_analyses": [],
+        "wind_down": wind_down,
+    }

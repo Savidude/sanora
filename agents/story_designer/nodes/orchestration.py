@@ -5,6 +5,7 @@ from langchain_core.messages import SystemMessage
 from ..state import StoryState
 from ..models.curriculum import Curriculum
 from ..models.progress import Progress, GrammarConceptProgress, WordCategoryProgress
+from .narrator import narrator_fan_out
 
 CURRICULUM: Curriculum = Curriculum.load()
 
@@ -16,6 +17,8 @@ A folded note rests on top, telling Pip to meet someone at a local café.
 
 The story begins now.
 """
+
+WIND_DOWN_LIMIT_DEFAULT = 3
 
 
 def _initialize_progress() -> Progress:
@@ -46,3 +49,23 @@ def initialise_story(state: StoryState) -> dict:  # pylint: disable=unused-argum
         "progress": _initialize_progress(),
         "wind_down": False,
     }
+
+
+def check_ending(state: StoryState) -> dict:
+    """Check if the story should be wrapped up based on the wind down flag and turn count,
+    and either trigger the wrap up or fan out to the narrator for the next iteration.
+    """
+    if (
+        state.get("wind_down", False)
+        and state.get("wind_down_turns", 0) >= WIND_DOWN_LIMIT_DEFAULT
+    ):
+        return "wrap_story"
+
+    return narrator_fan_out(state)
+
+
+def wrap_story(state: StoryState) -> dict:
+    """Wrap up the story by compiling the full story text from the story lines."""
+    lines = state.get("story_lines", [])
+    formatted = "\n\n".join(lines)
+    return {"full_story": formatted}

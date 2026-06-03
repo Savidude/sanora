@@ -1,15 +1,12 @@
+"""This module defines the protagonist character and their turn logic in the 
+story designer agent.
+"""
+
 from pathlib import Path
 
 from langchain_aws import ChatBedrockConverse
-from .narrator import NARRATOR
-from ..characters import Character, LlmModel, build_messages_for_character
+from ..characters import NARRATOR, PROTAGONIST, build_messages_for_character
 from ..state import StoryState
-
-PROTAGONIST = Character(
-    name="Protagonist",
-    model=LlmModel.AMAZON_NOVA_MICRO,
-    max_tokens=64,
-)
 
 
 def _extract_text(content) -> str:
@@ -62,4 +59,5 @@ def protagonist_turn(state: StoryState) -> dict:
 
     return {
         "story_lines": new_story_lines,
+        "turn_count": state.get("turn_count", 0) + 1,
     }

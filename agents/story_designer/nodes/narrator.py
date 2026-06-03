@@ -5,16 +5,9 @@ from pathlib import Path
 from langchain_aws import ChatBedrockConverse
 from langgraph.types import Send
 
-from ..characters import Character, LlmModel, build_messages_for_character
+from ..characters import NARRATOR, PROTAGONIST, build_messages_for_character
 from ..state import StoryState
-from .protagonist import PROTAGONIST
 from .util import generate_grammar_concept_lines
-
-NARRATOR = Character(
-    name="Narrator",
-    model=LlmModel.OPENAI_GPT_OSS_20B,
-    max_tokens=256,
-)
 
 
 def _extract_text(content) -> str:

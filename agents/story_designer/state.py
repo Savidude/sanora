@@ -33,4 +33,8 @@ class StoryState(TypedDict):
     inspector_results: Annotated[list[Phrase], _inspector_results_reducer]
     progress: Progress
     pending_analyses: PhraseAnalysis
+    turn_count: int
+    turn_summaries: dict[int, str]
+    wind_down_turns: int
     wind_down: bool
+    full_story: str
