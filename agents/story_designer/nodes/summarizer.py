@@ -1,18 +1,15 @@
+"""Builds the summarizer node that generates a concise summary of the latest turn in the story."""
+
 from langchain_aws import ChatBedrockConverse
 from langchain_core.messages import SystemMessage, HumanMessage
+from common.logger import get_logger
 
 from ..state import StoryState
 from ..characters import NARRATOR, PROTAGONIST
 from ..characters import LlmModel
+from .util import extract_text
 
-
-def _extract_text(content) -> str:
-    if isinstance(content, str):
-        return content
-    return "".join(
-        block.get("text", "") if isinstance(block, dict) else str(block)
-        for block in content
-    )
+logger = get_logger(__name__)
 
 
 def _build_story_so_far(story_lines: list[str], turn_summaries: dict[int, str]) -> str:
@@ -47,7 +44,7 @@ def _build_story_so_far(story_lines: list[str], turn_summaries: dict[int, str]) 
 def summarizer(state: StoryState) -> dict:
     """Invoke the summarizer LLM to generate a concise summary of the latest turn in the story."""
 
-    llm = ChatBedrockConverse(model_id=LlmModel.OPENAI_GPT_OSS_20B, max_tokens=256)
+    llm = ChatBedrockConverse(model_id=LlmModel.OPENAI_GPT_OSS_20B, max_tokens=1024)
 
     story_lines = state.get("story_lines", [])
     current_story = state.get("turn_summaries") or {}
@@ -66,7 +63,15 @@ def summarizer(state: StoryState) -> dict:
             HumanMessage(content=_build_story_so_far(story_lines, current_story)),
         ]
     )
-    summary = _extract_text(response.content).strip()
+    summary = extract_text(response.content).strip()
+    if not summary:
+        logger.warning(
+            "Summarizer returned an empty response",
+            extra={
+                "stop_reason": response.response_metadata.get("stopReason"),
+                "turn_count": state.get("turn_count", 0),
+            },
+        )
     updated_summaries: dict = {
         "turn_summaries": {**current_story, state.get("turn_count", 0): summary},
     }

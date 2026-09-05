@@ -1,24 +1,22 @@
 """Contains nodes responsible for orchestrating the agents in the Story Designer."""
 
+import os
 from langchain_core.messages import SystemMessage
 
-from ..state import StoryState
 from ..models.curriculum import Curriculum
-from ..models.progress import Progress, GrammarConceptProgress, WordCategoryProgress
+from ..models.progress import GrammarConceptProgress, Progress, WordCategoryProgress
+from ..state import StoryState
 from .narrator import narrator_fan_out
 
 CURRICULUM: Curriculum = Curriculum.load()
 
-STORY_OPENING = """SCENE: A hotel lobby, the morning of a life-changing job interview.
-
-Pip has just opened their suitcase in the room and found the wrong one — inside:
-a book of poetry, one red high-heeled shoe, and a photo of his childhood home.
-A folded note rests on top, telling Pip to meet someone at a local café.
-
-The story begins now.
+STORY_OPENING = """Leo was halfway up the coastal hill, his lungs burning and the steady clicking 
+of his gears filling the quiet morning, when his front tire blew with a sharp pop. As he skidded 
+to a stop near the tree line, he noticed a glossy red envelope half-hidden in the tall grass where 
+he’d managed to pull off. It was sealed with heavy wax, completely dry despite the morning dew, 
+and addressed to him in neat, handwritten ink—even though he hadn't taken this back road in over 
+three years.
 """
-
-WIND_DOWN_LIMIT_DEFAULT = 3
 
 
 def _initialize_progress() -> Progress:
@@ -55,9 +53,8 @@ def check_ending(state: StoryState) -> dict:
     """Check if the story should be wrapped up based on the wind down flag and turn count,
     and either trigger the wrap up or fan out to the narrator for the next iteration.
     """
-    if (
-        state.get("wind_down", False)
-        and state.get("wind_down_turns", 0) >= WIND_DOWN_LIMIT_DEFAULT
+    if state.get("wind_down", False) and state.get("wind_down_turns", 0) >= int(
+        os.getenv("WIND_DOWN_TURN_LIMIT")
     ):
         return "wrap_story"
 

@@ -1,13 +1,13 @@
 """Dataclasses for keeping track of the story state agent."""
 
 from typing import Annotated
-from typing_extensions import TypedDict
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
+from typing_extensions import TypedDict
 
-from .models.progress import Progress
 from .models.content import Phrase, PhraseAnalysis
+from .models.progress import Progress
 
 
 def _candidates_reducer(existing: list[str], update: list[str] | None) -> list[str]:

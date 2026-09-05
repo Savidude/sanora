@@ -3,19 +3,14 @@ story designer agent.
 """
 
 from pathlib import Path
+from common.logger import get_logger
 
 from langchain_aws import ChatBedrockConverse
 from ..characters import NARRATOR, PROTAGONIST, build_messages_for_character
 from ..state import StoryState
+from .util import extract_text
 
-
-def _extract_text(content) -> str:
-    if isinstance(content, str):
-        return content
-    return "".join(
-        block.get("text", "") if isinstance(block, dict) else str(block)
-        for block in content
-    )
+logger = get_logger(__name__)
 
 
 def _get_system_prompt_for_protagonist() -> str:
@@ -46,9 +41,17 @@ def protagonist_turn(state: StoryState) -> dict:
     # Sometimes the LLM might return an empty response, so we retry a few times before giving up
     for _ in range(3):
         response = llm.invoke(messages)
-        raw_text = _extract_text(response.content)
+        raw_text = extract_text(response.content)
         if raw_text.strip():
             break
+        else:
+            logger.warning(
+                "Protagonist returned an empty response",
+                extra={
+                    "attempt": _ + 1,
+                    "stop_reason": response.response_metadata.get("stopReason"),
+                },
+            )
 
     if not raw_text.strip():
         raise RuntimeError("Protagonist model returned empty text after 3 attempts")

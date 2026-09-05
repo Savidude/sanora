@@ -1,22 +1,16 @@
 """Contains nodes required for the functioning of the narrator agent"""
 
 from pathlib import Path
+from common.logger import get_logger
 
 from langchain_aws import ChatBedrockConverse
 from langgraph.types import Send
 
 from ..characters import NARRATOR, PROTAGONIST, build_messages_for_character
 from ..state import StoryState
-from .util import generate_grammar_concept_lines
+from .util import generate_grammar_concept_lines, extract_text
 
-
-def _extract_text(content) -> str:
-    if isinstance(content, str):
-        return content
-    return "".join(
-        block.get("text", "") if isinstance(block, dict) else str(block)
-        for block in content
-    )
+logger = get_logger(__name__)
 
 
 def _build_system_prompt_for_narrator(state: StoryState) -> str:
@@ -60,9 +54,17 @@ def narrator_variation(state: StoryState) -> dict:
     # Sometimes the LLM might return an empty response, so we retry a few times before giving up
     for _ in range(3):
         response = llm.invoke(messages)
-        text = _extract_text(response.content).strip()
+        text = extract_text(response.content).strip()
         if text:
             break
+        else:
+            logger.warning(
+                "Narrator returned an empty response",
+                extra={
+                    "attempt": _ + 1,
+                    "stop_reason": response.response_metadata.get("stopReason"),
+                },
+            )
 
     return {"narrator_candidates": [text] if text else []}
 

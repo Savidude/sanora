@@ -1,3 +1,5 @@
+"""Defines the characters that play in the story."""
+
 from enum import Enum
 from pydantic import BaseModel
 
@@ -27,12 +29,6 @@ class Character(BaseModel):
     max_tokens: int = 256
 
 
-def _build_system_prompt(system_prompt: str, wind_down: bool) -> str:
-    if wind_down:
-        return f"{system_prompt}\n\n{WIND_DOWN_INSTRUCTION}"
-    return system_prompt
-
-
 def build_messages_for_character(
     story_lines: list[str],
     speaker_name: str,
@@ -55,11 +51,11 @@ def build_messages_for_character(
     conclusion.
     """
 
-    messages = [SystemMessage(content=_build_system_prompt(system_prompt, wind_down))]
+    messages = [SystemMessage(content=system_prompt)]
 
     # story_lines[0] is the opening scene — add as human context
     if story_lines:
-        messages.append(HumanMessage(content=story_lines[0]))
+        messages.append(SystemMessage(content=story_lines[0]))
 
     for line in story_lines[1:]:
         if line.startswith(f"{speaker_name}:"):
@@ -69,6 +65,8 @@ def build_messages_for_character(
             content = line[len(f"{other_name}:") :].strip()
             messages.append(HumanMessage(content=content))
 
+    if wind_down:
+        messages.append(SystemMessage(content=WIND_DOWN_INSTRUCTION))
     return messages
 
 
@@ -81,5 +79,5 @@ PROTAGONIST = Character(
 NARRATOR = Character(
     name="Narrator",
     model=LlmModel.OPENAI_GPT_OSS_20B,
-    max_tokens=256,
+    max_tokens=2048,
 )

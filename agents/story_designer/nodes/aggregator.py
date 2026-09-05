@@ -1,5 +1,7 @@
 """Implementation of the aggregator node for the story designer"""
 
+import os
+
 from ..state import StoryState
 from ..models.progress import Progress
 
@@ -30,10 +32,9 @@ def aggregator(state: StoryState) -> dict:
     for word_category_code, count in word_counts.items():
         progress.update_word_category_progress(word_category_code, count)
 
-    wind_down = (
-        state.get("wind_down", False)
-        or len(progress.get_unidentified_grammar_concepts()) == 0
-    )
+    wind_down = state.get("wind_down", False) or len(
+        progress.get_unidentified_grammar_concepts()
+    ) < int(os.getenv("WIND_DOWN_GRAMMAR_CONCEPT_THRESHOLD"))
     return {
         "progress": progress,
         "pending_analyses": [],

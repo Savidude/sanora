@@ -3,14 +3,14 @@
 
 from langgraph.graph import END, START, StateGraph
 
-from .state import StoryState
-from .nodes.orchestration import initialise_story, check_ending, wrap_story
-from .nodes.narrator import narrator_fan_out, narrator_variation
-from .nodes.inspector import inspector_fan_out, inspector
-from .nodes.decider import decider
 from .nodes.aggregator import aggregator
+from .nodes.decider import decider
+from .nodes.inspector import inspector, inspector_fan_out
+from .nodes.narrator import narrator_fan_out, narrator_variation
+from .nodes.orchestration import check_ending, initialise_story, wrap_story
 from .nodes.protagonist import protagonist_turn
 from .nodes.summarizer import summarizer
+from .state import StoryState
 
 builder = StateGraph(StoryState)
 
