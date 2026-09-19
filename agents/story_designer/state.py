@@ -27,6 +27,7 @@ def _inspector_results_reducer(
 class StoryState(TypedDict):
     """State of the story designer agent."""
 
+    story_opening: str
     messages: Annotated[list[BaseMessage], add_messages]
     story_lines: list[str]
     narrator_candidates: Annotated[list[str], _candidates_reducer]

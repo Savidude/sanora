@@ -10,14 +10,6 @@ from .narrator import narrator_fan_out
 
 CURRICULUM: Curriculum = Curriculum.load()
 
-STORY_OPENING = """Leo was halfway up the coastal hill, his lungs burning and the steady clicking 
-of his gears filling the quiet morning, when his front tire blew with a sharp pop. As he skidded 
-to a stop near the tree line, he noticed a glossy red envelope half-hidden in the tall grass where 
-he’d managed to pull off. It was sealed with heavy wax, completely dry despite the morning dew, 
-and addressed to him in neat, handwritten ink—even though he hadn't taken this back road in over 
-three years.
-"""
-
 
 def _initialize_progress() -> Progress:
     """Initialise the progress tracking for a story design session, based on the curriculum."""
@@ -40,10 +32,11 @@ def _initialize_progress() -> Progress:
 
 def initialise_story(state: StoryState) -> dict:  # pylint: disable=unused-argument
     """Initialise the story state."""
-    story_opening = SystemMessage(content=STORY_OPENING)
+    opening = state["story_opening"].strip()
+    story_opening = SystemMessage(content=opening)
     return {
         "messages": [story_opening],
-        "story_lines": [f"--- {STORY_OPENING.strip()} ---"],
+        "story_lines": [f"--- {opening} ---"],
         "progress": _initialize_progress(),
         "wind_down": False,
     }

@@ -1,43 +1,19 @@
-name: Launch Agent Runtime
+name: Deploy Agent Runtime
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'agents/**'
 
 jobs:
-  launch-runtime:
+  deploy-runtime:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_AGENTS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_AGENTS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install agentcore CLI
-        run: |
-          pip install "bedrock-agentcore-starter-toolkit==0.1.32"
-
-      - name: Make script executable
-        run: chmod +x .github/scripts/launch_agent_runtime.sh
-
-      - name: Run launch agent runtime script
+      - uses: ./.github/actions/setup-cdk
         env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ vars.AWS_REGION }}
-          AGENT_NAME: ${{ vars.AGENT_NAME }}
-          GITHUB_WORKSPACE: ${{ github.workspace }}
-        run: ./.github/scripts/launch_agent_runtime.sh
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      - name: Deploy AgentsStack
+        run: |
+          cd deployment-stacks
+          cdk deploy AgentsStack --require-approval never

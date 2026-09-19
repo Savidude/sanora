@@ -33,6 +33,7 @@ jobs:
           filters: |
             agents:
               - 'deployment-stacks/stack_agents/**'
+              - 'agents/**'
               - 'deployment-stacks/shared_resource_config.py'
               - 'deployment-stacks/app.py'
             messaging:

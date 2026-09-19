@@ -1,10 +1,10 @@
-# Agentcore configurations
+# AgentCore configurations
 .bedrock_agentcore.yaml
 .bedrock_agentcore/
-/agents/.dockerignore
 
 # Environment variables
 .env
+.env.local
 
 # Python cache files
 __pycache__/
