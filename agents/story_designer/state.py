@@ -6,7 +6,7 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
 
-from .models.content import Phrase, PhraseAnalysis
+from .models.content import Phrase, PhraseAnalysis, Summary
 from .models.progress import Progress
 
 
@@ -35,7 +35,7 @@ class StoryState(TypedDict):
     progress: Progress
     pending_analyses: PhraseAnalysis
     turn_count: int
-    turn_summaries: dict[int, str]
+    turn_summaries: dict[int, Summary]
     wind_down_turns: int
     wind_down: bool
     full_story: str

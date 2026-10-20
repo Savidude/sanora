@@ -15,11 +15,13 @@ class SharedValues:
     congnito_user_pool_client_name: str = "sanora-user-pool-web-client"
 
     iam_messaging_function_role_name: str = "SanoraMessagingFunctionRole"
+    iam_story_designer_function_role_name: str = "SanoraStoryDesignerFunctionRole"
     iam_tutor_agent_execution_role_name: str = "SanoraTutorAgentExecutionRole"
     iam_agentcore_cicd_user_policy_name: str = "SanoraAgentcoreCICDUserPolicy"
     iam_amplify_service_role_name: str = "SanoraAmplifyServiceRole"
 
     lambda_messaging_function_name: str = "messaging-service"
+    lambda_story_designer_function_name: str = "story-designer-service"
 
     apigw_messaging_name: str = "SanoraMessagingAPI"
     apigw_messaging__throttle_rate_limit: int = 1000
@@ -45,7 +47,7 @@ class SSMParameterPaths:
     SSM Parameter Store paths for shared resources.
     """
 
-    env: str = "/sanora/env" # added manually, possible values: "dev"/"stg"/"prd"
+    env: str = "/sanora/env"  # added manually, possible values: "dev"/"stg"/"prd"
 
     iam_tutor_agent_execution_role_arn: str = (
         "/sanora/iam/tutor_agent_execution_role_arn"
@@ -53,7 +55,9 @@ class SSMParameterPaths:
 
     ecr_tutor_agent_repository_uri: str = "/sanora/ecr/tutor_agent_repository_uri"
 
-    agentcore_tutor_agent_runtime_arn: str = "/sanora/agentcore/tutor_agent_runtime_arn"
+    story_designer_agent_runtime_arn: str = (
+        "/sanora/agentcore/story_designer_agent_runtime_arn"
+    )
 
     s3_agent_artifacts_bucket_name: str = "/sanora/s3/agent_artifacts_bucket_name"
 

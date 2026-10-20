@@ -19,6 +19,7 @@ class LlmModel(str, Enum):
 
     OPENAI_GPT_OSS_20B = "openai.gpt-oss-20b-1:0"
     AMAZON_NOVA_MICRO = "eu.amazon.nova-micro-v1:0"
+    ANTHROPIC_CLAUDE_HAIKU_4_5 = "eu.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 
 class Character(BaseModel):
@@ -26,7 +27,7 @@ class Character(BaseModel):
 
     name: str
     model: LlmModel
-    max_tokens: int = 256
+    max_tokens: int = 64
 
 
 def build_messages_for_character(

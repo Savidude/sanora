@@ -59,9 +59,15 @@ def invoke(payload: dict) -> dict:
             "story_opening": prompt,
         }
     )
+    progress = result.get("progress")
     return {
-        "message": result.get("full_story", ""),
-        "story_lines": result.get("story_lines", []),
+        "scenario": result.get("story_opening", ""),
+        "story_states": result.get("turn_summaries", []),
+        "grammar_progress": (
+            progress.model_dump(mode="json").get("grammar_concept_progress", [])
+            if progress
+            else []
+        ),
     }
 
 

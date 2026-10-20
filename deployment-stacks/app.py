@@ -26,6 +26,8 @@ agent_messaging_stack = AgentMessagingStack(
 agents_stack = AgentsStack(app, "AgentsStack", shared_values, ssm_parameter_paths)
 
 # frontend_stack.add_dependency(agent_messaging_stack)
-# agent_messaging_stack.add_dependency(agents_stack)
+agent_messaging_stack.add_dependency(
+    agents_stack
+)  # agents stack depends on agent messaging stack
 
 app.synth()

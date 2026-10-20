@@ -1,5 +1,7 @@
 """CDK stack for managing resources for agent messaging functionality."""
 
+from pathlib import Path
+
 from aws_cdk import (
     Stack,
     Duration,
@@ -30,6 +32,7 @@ class AgentMessagingStack(Stack):
         messaging_function = self._create_messaging_function_resources(
             shared_values, ssm_paths
         )
+        self._create_story_designer_function_resources(shared_values, ssm_paths)
         self._create_messaging_api_resources(
             user_pool, messaging_function, shared_values, ssm_paths
         )
@@ -94,8 +97,10 @@ class AgentMessagingStack(Stack):
     ) -> _lambda.DockerImageFunction:
         """Create Lambda function for handling messaging."""
 
-        tutor_agent_runtime_arn = ssm.StringParameter.value_for_string_parameter(
-            self, ssm_paths.agentcore_tutor_agent_runtime_arn
+        story_designer_agent_runtime_arn = (
+            ssm.StringParameter.value_for_string_parameter(
+                self, ssm_paths.story_designer_agent_runtime_arn
+            )
         )
 
         role = iam.Role(
@@ -115,7 +120,7 @@ class AgentMessagingStack(Stack):
             ),
             iam.PolicyStatement(
                 actions=["bedrock-agentcore:InvokeAgentRuntime"],
-                resources=[f"{tutor_agent_runtime_arn}*"],
+                resources=[f"{story_designer_agent_runtime_arn}*"],
             ),
         ]
         for statement in custom_policy_statements:
@@ -131,11 +136,59 @@ class AgentMessagingStack(Stack):
             timeout=Duration.minutes(1),
             architecture=_lambda.Architecture.X86_64,
             environment={
-                "TUTOR_AGENT_RUNTIME_ARN": tutor_agent_runtime_arn,
+                "TUTOR_AGENT_RUNTIME_ARN": story_designer_agent_runtime_arn,
             },
         )
 
         return messaging_function
+
+    def _create_story_designer_function_resources(
+        self, shared_values: SharedValues, ssm_paths: SSMParameterPaths
+    ) -> _lambda.Function:
+        """Create a Lambda function for invoking the StoryDesigner runtime."""
+
+        story_designer_runtime_arn = ssm.StringParameter.value_for_string_parameter(
+            self, ssm_paths.story_designer_agent_runtime_arn
+        )
+
+        role = iam.Role(
+            self,
+            shared_values.iam_story_designer_function_role_name,
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            role_name=shared_values.iam_story_designer_function_role_name,
+        )
+        role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                ],
+                resources=["*"],
+            )
+        )
+        role.add_to_policy(
+            iam.PolicyStatement(
+                actions=["bedrock-agentcore:InvokeAgentRuntime"],
+                resources=[f"{story_designer_runtime_arn}*"],
+            )
+        )
+
+        return _lambda.Function(
+            self,
+            shared_values.lambda_story_designer_function_name,
+            function_name=shared_values.lambda_story_designer_function_name,
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="story_designer.handler",
+            code=_lambda.Code.from_asset(
+                str(Path(__file__).parents[1] / "lambdas" / "story_designer")
+            ),
+            role=role,
+            timeout=Duration.minutes(5),
+            environment={
+                "STORY_DESIGNER_RUNTIME_ARN": story_designer_runtime_arn,
+            },
+        )
 
     def _create_messaging_api_resources(
         self,

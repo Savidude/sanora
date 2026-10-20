@@ -1,6 +1,7 @@
 {
   "graphs": {
-    "story_designer": "story_designer.graph:graph"
+    "story_designer": "story_designer.graph:graph",
+    "tutor": "tutor.graph:graph"
   },
   "env": ".env",
   "dependencies": ["."],

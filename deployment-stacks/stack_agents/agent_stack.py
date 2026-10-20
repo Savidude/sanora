@@ -125,4 +125,10 @@ class AgentsStack(Stack):
             },
             description="Sanora Finnish story designer AgentCore runtime",
         )
+        ssm.StringParameter(
+            self,
+            "StoryDesignerRuntimeArnParameter",
+            parameter_name=ssm_paths.story_designer_agent_runtime_arn,
+            string_value=runtime.attr_agent_runtime_arn,
+        )
         runtime.node.add_dependency(ecr_pull_policy)

@@ -33,3 +33,10 @@ class Phrase(BaseModel):
 
     content: str
     analysis: PhraseAnalysis
+
+
+class Summary(BaseModel):
+    """A summary of a turn in the story."""
+
+    event: str
+    protagonist_decision: str

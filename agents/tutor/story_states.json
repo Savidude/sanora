@@ -1,0 +1,56 @@
+{
+  "story_states": {
+    "1": {
+      "event": "Savidu stops his bike and discovers a folded note in his hand asking him to meet someone at the old factory at 5:00 PM. He hesitates, uncertain whether to call the police.",
+      "protagonist_decision": "Savidu decides to meet whoever left the note at the old factory at 5:00 PM rather than call the police."
+    },
+    "2": {
+      "event": "Savidu arrives at the abandoned factory and encounters a guard stationed near the door. He realizes the note warns him that the meeting is a trap.",
+      "protagonist_decision": "Savidu decides to enter the factory despite recognizing the danger and the guard's presence."
+    },
+    "3": {
+      "event": "Savidu enters the dark factory and spots a table with a key and cash. The guard notices him and raises his hand as Savidu quickly grabs the key and attempts to flee.",
+      "protagonist_decision": "Savidu grabs the key and immediately leaves the factory, prioritizing escape over the cash."
+    },
+    "4": {
+      "event": "Savidu escapes through the back door using the key and discovers a hidden room containing documents and cash. He grabs the documents and flees the factory.",
+      "protagonist_decision": "Savidu chooses to take the documents instead of the money and immediately leaves the factory to escape."
+    },
+    "5": {
+      "event": "Savidu hides behind the crates as the guard approaches the storage room, hearing the metallic clank of footsteps getting closer. A shadow passes the broken window, indicating the guard is searching for him.",
+      "protagonist_decision": "Savidu decides to conceal himself behind the crates rather than attempt to reach the street, hoping to avoid detection."
+    },
+    "6": {
+      "event": "The guard searches the storage room with a flashlight and demands that Savidu hand over the documents, revealing that they know he has them. Savidu remains hidden behind the crates, clutching the documents.",
+      "protagonist_decision": "Savidu refuses to surrender the documents and remains concealed behind the crates, maintaining possession of what he believes is valuable or important."
+    },
+    "7": {
+      "event": "The guard threatens Savidu, searching the storage room with his flashlight and demanding the documents. Savidu remains concealed behind the crates, clutching the papers in his jacket while the guard's footsteps grow closer.",
+      "protagonist_decision": "Savidu chooses to stay hidden and remain silent, listening to the guard's movements rather than risk exposure by attempting to flee to the alley."
+    },
+    "8": {
+      "event": "The guard's flashlight beam stops directly on Savidu's hiding spot behind the crates, and the guard threatens to take over the room if Savidu doesn't cooperate by handing over the documents.",
+      "protagonist_decision": "Savidu decides to remain hidden and wait for the guard to leave rather than surrender the documents or engage in confrontation."
+    },
+    "9": {
+      "event": "As the first guard's footsteps fade and his flashlight turns off, a siren blares outside and a second guard enters the storage room, scanning the area around the crates where Savidu is hiding.",
+      "protagonist_decision": "Savidu continues to conceal the documents and remains hidden behind the crates, refusing to reveal his position or surrender the papers to the new guard."
+    },
+    "10": {
+      "event": "The second guard's flashlight beam illuminates the crates where Savidu is hiding, and he demands that Savidu surrender the documents. A siren continues to wail outside as the guard intensifies his search.",
+      "protagonist_decision": "Savidu refuses to surrender the documents and maintains his concealment behind the crates, determined to keep the papers hidden despite the guard's direct challenge and the escalating danger."
+    },
+    "11": {
+      "event": "The guard's flashlight fails and he retreats from the storage room, mentioning backup as the siren intensifies outside. Savidu seizes this opportunity to escape.",
+      "protagonist_decision": "Savidu runs toward the street with the documents, abandoning his hiding spot to flee the factory before the backup arrives."
+    },
+    "12": {
+      "event": "Savidu reaches the police station as the siren fades. He realizes the documents contain evidence of a major crime and must decide whether to turn them over to authorities.",
+      "protagonist_decision": "Savidu hands the documents over to the police, trusting them with the evidence of the crime."
+    },
+    "13": {
+      "event": "The police accept the documents from Savidu, thank him for his bravery, and offer a small reward for bringing them the evidence. They promise to conduct a full investigation into the crime.",
+      "protagonist_decision": "Savidu decides to go home and wait for the police to call him with updates about their investigation."
+    }
+  }
+}
