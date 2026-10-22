@@ -8,7 +8,7 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
 
-from .models import State, FallbackContext
+from .models import State, FallbackContext, Review, Translation
 
 _STORY_STATES_PATH = Path(__file__).with_name("story_states.json")
 
@@ -51,6 +51,9 @@ class TutorState(TypedDict):
     """State of the tutor agent."""
 
     messages: Annotated[list[BaseMessage], add_messages]
+    messages_english: Annotated[list[BaseMessage], add_messages]
+    response_review: Review
+    translation: Translation
     scenario: str
     story_states: Annotated[dict[int, StoryStateValue], _assign_once]
     current_story_state: int = 1

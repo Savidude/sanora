@@ -58,7 +58,7 @@ def _get_latest_user_message(state: TutorState) -> HumanMessage | None:
     return next(
         (
             message
-            for message in reversed(state.get("messages", []))
+            for message in reversed(state.get("messages_english", []))
             if isinstance(message, HumanMessage)
         ),
         None,
@@ -94,9 +94,7 @@ def facilitator(state: TutorState) -> dict:
     )
 
     current_story_state = state["current_story_state"]
-    story_state = story_state_to_dict(
-        state["story_states"][current_story_state]
-    )
+    story_state = story_state_to_dict(state["story_states"][current_story_state])
     story_history = _get_story_history(state, current_story_state)
     messages = [
         SystemMessage(content=_get_system_prompt_for_facilitator(state["scenario"])),
@@ -137,7 +135,7 @@ def facilitator(state: TutorState) -> dict:
 
     response = llm.invoke(messages)
     return {
-        "messages": [AIMessage(content=response.content)],
+        "messages_english": [AIMessage(content=response.content)],
     }
 
 
@@ -186,10 +184,8 @@ def _nudge_fallback_facilitator(state: TutorState, story_state: dict[str, str]) 
     if question and not question.endswith("?"):
         question += "?"
     return {
-        "messages": [
-            AIMessage(
-                content=f"{acknowledgement} {barrier} {question}".strip()
-            )
+        "messages_english": [
+            AIMessage(content=f"{acknowledgement} {barrier} {question}".strip())
         ],
         "fallback_context": None,
     }
@@ -240,7 +236,9 @@ def _forced_fallback_facilitator(
     if continuation and "?" not in continuation:
         continuation = continuation.rstrip(".!?") + "?"
     return {
-        "messages": [AIMessage(content=f"{acknowledgement} {continuation}".strip())],
+        "messages_english": [
+            AIMessage(content=f"{acknowledgement} {continuation}".strip())
+        ],
         "fallback_context": None,
     }
 

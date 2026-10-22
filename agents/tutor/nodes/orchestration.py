@@ -24,4 +24,4 @@ def direct_message(state: TutorState) -> str:
     if len(state.get("messages", [])) == 0:
         return "facilitator"
     else:
-        return "state_evaluator"
+        return "reviewer"
