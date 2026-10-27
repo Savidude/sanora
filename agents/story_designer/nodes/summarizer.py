@@ -1,22 +1,16 @@
 """Builds the summarizer node that generates a concise summary of the latest turn in the story."""
 
-import json
-from common.logger import get_logger
-
 from langchain_aws import ChatBedrockConverse
 from langchain_core.messages import SystemMessage, HumanMessage
+from sanora_contracts import StoryTurnSummary
 
 from ..state import StoryState
 from ..characters import NARRATOR, PROTAGONIST
 from ..characters import LlmModel
-from ..models.content import Summary
-from .util import extract_text
-
-logger = get_logger(__name__)
 
 
 def _build_story_so_far(
-    story_lines: list[str], turn_summaries: dict[int, Summary]
+    story_lines: list[str], turn_summaries: dict[int, StoryTurnSummary]
 ) -> str:
 
     # Find the last narrator and protagonist lines
@@ -54,26 +48,15 @@ def _build_story_so_far(
     return content
 
 
-def _parse_summary(response_content) -> Summary:
-    """Parse a Summary from JSON, tolerating text before or after the JSON object."""
-    text = extract_text(response_content).strip()
-    start = text.find("{")
-    if start == -1:
-        raise ValueError("response did not contain a JSON object")
-
-    parsed, _ = json.JSONDecoder().raw_decode(text[start:])
-    return Summary.model_validate(parsed)
-
-
 def summarizer(state: StoryState) -> dict:
     """Invoke the summarizer LLM to generate a concise summary of the latest turn in the story."""
 
     llm = ChatBedrockConverse(
         model_id=LlmModel.ANTHROPIC_CLAUDE_HAIKU_4_5, max_tokens=1048
     ).with_structured_output(
-        Summary,
+        StoryTurnSummary,
         method="json_schema",
-    )
+    ).with_retry(stop_after_attempt=3)
 
     story_lines = state.get("story_lines", [])
     current_story = state.get("turn_summaries") or {}
@@ -96,24 +79,9 @@ def summarizer(state: StoryState) -> dict:
         HumanMessage(content=_build_story_so_far(story_lines, current_story)),
     ]
 
-    summary = None
-    for attempt in range(3):
-        raw_response = llm.invoke(messages)
-        try:
-            summary = _parse_summary(raw_response.content)
-            break
-        except (TypeError, ValueError, json.JSONDecodeError) as error:
-            logger.warning(
-                "Summarizer returned invalid JSON",
-                extra={"attempt": attempt + 1, "error": str(error)},
-            )
+    summary = llm.invoke(messages)
 
-    if summary is None:
-        raise RuntimeError(
-            "Summarizer failed to return a valid Summary after 3 attempts"
-        )
-
-    updated_turn_summaries = dict[int, Summary](current_story)
+    updated_turn_summaries = dict[int, StoryTurnSummary](current_story)
     updated_turn_summaries[state.get("turn_count", 0)] = summary
 
     updated_summaries: dict = {"turn_summaries": updated_turn_summaries}

@@ -29,10 +29,22 @@ class AgentsStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # CDK builds and publishes the image before creating the runtime.
+        repository_root = Path(__file__).parents[2]
         agent_image = ecr_assets.DockerImageAsset(
             self,
             "StoryDesignerImage",
-            directory=str(Path(__file__).parents[2] / "agents"),
+            directory=str(repository_root),
+            file="agents/Dockerfile",
+            exclude=[
+                ".git",
+                ".github",
+                "deployment-stacks",
+                "**/.venv",
+                "**/__pycache__",
+                "**/.pytest_cache",
+                "**/.cdk.staging",
+                "**/cdk.out",
+            ],
             platform=ecr_assets.Platform.LINUX_ARM64,
         )
 

@@ -20,8 +20,12 @@ class SharedValues:
     iam_agentcore_cicd_user_policy_name: str = "SanoraAgentcoreCICDUserPolicy"
     iam_amplify_service_role_name: str = "SanoraAmplifyServiceRole"
 
+    s3_stories_bucket_name: str = "sanora-stories-bucket"
+
+    dynamodb_story_table_name: str = "stories-table"
+
     lambda_messaging_function_name: str = "messaging-service"
-    lambda_story_designer_function_name: str = "story-designer-service"
+    lambda_story_designer_function_name: str = "story-designer"
 
     apigw_messaging_name: str = "SanoraMessagingAPI"
     apigw_messaging__throttle_rate_limit: int = 1000

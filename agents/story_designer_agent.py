@@ -5,6 +5,7 @@ import os
 
 import boto3
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
+from sanora_contracts import StoryDesignerResponse
 from story_designer.graph import graph
 
 app = BedrockAgentCoreApp()
@@ -60,15 +61,16 @@ def invoke(payload: dict) -> dict:
         }
     )
     progress = result.get("progress")
-    return {
-        "scenario": result.get("story_opening", ""),
-        "story_states": result.get("turn_summaries", []),
-        "grammar_progress": (
+    response = StoryDesignerResponse(
+        scenario=result.get("story_opening", ""),
+        story_states=result.get("turn_summaries") or {},
+        grammar_progress=(
             progress.model_dump(mode="json").get("grammar_concept_progress", [])
             if progress
             else []
         ),
-    }
+    )
+    return response.model_dump(mode="json")
 
 
 if __name__ == "__main__":

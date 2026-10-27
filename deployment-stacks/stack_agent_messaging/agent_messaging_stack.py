@@ -6,10 +6,14 @@ from aws_cdk import (
     Stack,
     Duration,
     aws_cognito as cognito,
+    aws_dynamodb as dynamodb,
+    aws_ecr_assets as ecr_assets,
     aws_lambda as _lambda,
     aws_iam as iam,
     aws_apigateway as apigw,
     aws_ssm as ssm,
+    aws_s3 as s3,
+    RemovalPolicy,
 )
 from constructs import Construct
 from shared_resource_config import SharedValues, SSMParameterPaths
@@ -32,7 +36,11 @@ class AgentMessagingStack(Stack):
         messaging_function = self._create_messaging_function_resources(
             shared_values, ssm_paths
         )
-        self._create_story_designer_function_resources(shared_values, ssm_paths)
+        story_bucket = self._create_story_bucket(shared_values)
+        story_designer_table = self._create_story_designer_table(shared_values)
+        self._create_story_designer_function_resources(
+            shared_values, ssm_paths, story_designer_table, story_bucket
+        )
         self._create_messaging_api_resources(
             user_pool, messaging_function, shared_values, ssm_paths
         )
@@ -142,9 +150,72 @@ class AgentMessagingStack(Stack):
 
         return messaging_function
 
+    def _create_story_bucket(self, shared_values: SharedValues) -> s3.Bucket:
+        """Create the bucket used to store generated story states."""
+
+        return s3.Bucket(
+            self,
+            shared_values.s3_stories_bucket_name,
+            bucket_name=shared_values.s3_stories_bucket_name,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
+    def _create_story_designer_table(
+        self, shared_values: SharedValues
+    ) -> dynamodb.Table:
+        """Create the table used to store generated story responses."""
+
+        table = dynamodb.Table(
+            self,
+            shared_values.dynamodb_story_table_name,
+            table_name=shared_values.dynamodb_story_table_name,
+            partition_key=dynamodb.Attribute(
+                name="PK", type=dynamodb.AttributeType.STRING
+            ),
+            sort_key=dynamodb.Attribute(name="SK", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.RETAIN,
+        )
+        # Keep the existing GSI projections unchanged. DynamoDB does not allow
+        # changing a GSI projection in place.
+        table.add_global_secondary_index(
+            index_name="DateIndex",
+            partition_key=dynamodb.Attribute(
+                name="date_index_pk", type=dynamodb.AttributeType.STRING
+            ),
+            sort_key=dynamodb.Attribute(
+                name="date_index_sk", type=dynamodb.AttributeType.STRING
+            ),
+            projection_type=dynamodb.ProjectionType.INCLUDE,
+            non_key_attributes=["id", "created_at", "s3_object_path"],
+        )
+        table.add_global_secondary_index(
+            index_name="IdentifiedConceptIndex",
+            partition_key=dynamodb.Attribute(
+                name="concept_index_pk", type=dynamodb.AttributeType.STRING
+            ),
+            sort_key=dynamodb.Attribute(
+                name="concept_index_sk", type=dynamodb.AttributeType.STRING
+            ),
+            projection_type=dynamodb.ProjectionType.INCLUDE,
+            non_key_attributes=[
+                "story_id",
+                "grammar_concept_code",
+                "identified",
+                "total_findings",
+                "created_at",
+                "s3_object_path",
+            ],
+        )
+        return table
+
     def _create_story_designer_function_resources(
-        self, shared_values: SharedValues, ssm_paths: SSMParameterPaths
-    ) -> _lambda.Function:
+        self,
+        shared_values: SharedValues,
+        ssm_paths: SSMParameterPaths,
+        story_designer_table: dynamodb.Table,
+        story_bucket: s3.Bucket,
+    ) -> _lambda.DockerImageFunction:
         """Create a Lambda function for invoking the StoryDesigner runtime."""
 
         story_designer_runtime_arn = ssm.StringParameter.value_for_string_parameter(
@@ -174,21 +245,41 @@ class AgentMessagingStack(Stack):
             )
         )
 
-        return _lambda.Function(
+        repository_root = Path(__file__).parents[2]
+        story_designer_function = _lambda.DockerImageFunction(
             self,
             shared_values.lambda_story_designer_function_name,
             function_name=shared_values.lambda_story_designer_function_name,
-            runtime=_lambda.Runtime.PYTHON_3_12,
-            handler="story_designer.handler",
-            code=_lambda.Code.from_asset(
-                str(Path(__file__).parents[1] / "lambdas" / "story_designer")
+            architecture=_lambda.Architecture.X86_64,
+            code=_lambda.DockerImageCode.from_image_asset(
+                str(repository_root),
+                file="deployment-stacks/lambdas/story_designer/Dockerfile",
+                exclude=[
+                    "agents",
+                    "deployment-stacks/stack_agents",
+                    "deployment-stacks/stack_agent_messaging",
+                    "deployment-stacks/stack_frontend",
+                    "deployment-stacks/app.py",
+                    "deployment-stacks/cdk.json",
+                    "deployment-stacks/cdk.context.json",
+                    "deployment-stacks/requirements*.txt",
+                    "deployment-stacks/shared_resource_config.py",
+                    "**/.cdk.staging",
+                    "**/cdk.out",
+                ],
+                platform=ecr_assets.Platform.LINUX_AMD64,
             ),
             role=role,
-            timeout=Duration.minutes(5),
+            timeout=Duration.minutes(10),
             environment={
                 "STORY_DESIGNER_RUNTIME_ARN": story_designer_runtime_arn,
+                "STORY_DESIGNER_TABLE_NAME": story_designer_table.table_name,
+                "STORY_DESIGNER_BUCKET_NAME": story_bucket.bucket_name,
             },
         )
+        story_designer_table.grant_write_data(story_designer_function)
+        story_bucket.grant_put(story_designer_function)
+        return story_designer_function
 
     def _create_messaging_api_resources(
         self,

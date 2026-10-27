@@ -4,9 +4,10 @@ from typing import Annotated
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
+from sanora_contracts import StoryTurnSummary
 from typing_extensions import TypedDict
 
-from .models.content import Phrase, PhraseAnalysis, Summary
+from .models.content import Phrase, PhraseAnalysis
 from .models.progress import Progress
 
 
@@ -35,7 +36,7 @@ class StoryState(TypedDict):
     progress: Progress
     pending_analyses: PhraseAnalysis
     turn_count: int
-    turn_summaries: dict[int, Summary]
+    turn_summaries: dict[int, StoryTurnSummary]
     wind_down_turns: int
     wind_down: bool
     full_story: str
